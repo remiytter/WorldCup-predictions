@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World cup predictions</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <h1>VM-tipping</h1>
+        <p>Tipp resultater og se hvem som vinner tippekonkurransen.</p>
+    </header>
 
+    <main class="container">
+        <section class="rules">
+            <h2>Regler</h2>
+            <ul>
+                <li>Riktig vinner: 1 poeng</li>
+                <li>Riktig resultat: 3 poeng</li>
+                <li>Riktig lag videre fra gruppe: 2 poeng</li>
+            </ul>
+        </section>
+
+        <section class="prediction-form">
+            <h2>Mine tips</h2>
+
+            <div class="name-field">
+                <label for="userName">Navn</label>
+                <input type="text" id="userName" placeholder="Skriv inn ditt navn">
+            </div>
+
+            <div class="action-buttons">
+                <button id="loadButton" type="button">Hent mine tips</button>
+            </div>
+
+            <div id="matchesContainer" class="matches-container">
+                <!-- Kampene legges inn her med javascript -->
+            </div>
+
+            <section class="group-predictions">
+                <h2>Gruppetipping</h2>
+                <div id="groupsContainer" class="groups-container"></div>
+            </section>
+
+            <p id="messageBox" class="message-box"></p>
+
+            <button id="saveButton">Lagre tips</button>
+        </section>
+    </main>
+</body>
+</html>
