@@ -100,9 +100,10 @@ function calculateScore(participant) {
             score += 2;
         }
     }
-
+ 
     return score;
 }
+
 
 function renderLeaderboard() {
     const participants = loadParticipants();
