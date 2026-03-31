@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | VM-tipping</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/admin.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <h1>Admin</h1>
+        <p>Legg inn faktiske resultater og gruppeløsning.</p>
+    </header>
+
+    <main class="container">
+        <section class="prediction-form">
+            <div class="page-actions">
+                <a href="index.html" class="back-link">← Tilbake til tipping</a>
+            </div>
+
+            <h2>Faktiske kampresultater</h2>
+            <div id="adminMatchesContainer" class="matches-container"></div>
+
+            <section class="group-predictions">
+                <h2>Faktiske gruppeplasseringer</h2>
+                <div id="admingroupsContainer" class="groups-container"></div>
+            </section>
+
+            <p id="adminMessageBox" class="message-box"></p>
+
+            <button id="saveResultsButton" type="button">Lagre fasit</button>
+        </section>
+    </main>
+</body>
+</html>

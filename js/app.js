@@ -38,6 +38,7 @@ const loadButton = document.getElementById("loadButton");
 const messageBox = document.getElementById("messageBox");
 const groupsContainer = document.getElementById("groupsContainer");
 
+
 function renderMatches() {
     matchesContainer.innerHTML = "";
 
@@ -107,11 +108,12 @@ function savePredictions() {
     clearMessage();
 
     const predictionData = collectPredictions();
+    const validationError = validatePredictions(predictionData);
 
-    if (!predictionData.user) {
-        showMessage("Du må skrive inn navnet ditt før du lagrer.", "error");
-        return;
-    }
+    if (validationError) {
+    showMessage(validationError, "error");
+    return;
+  }
 
     const savedParticipants = localStorage.getItem("vmParticipants");
     const participants = savedParticipants ? JSON.parse(savedParticipants) : [];
@@ -129,7 +131,7 @@ function savePredictions() {
     localStorage.setItem("vmParticipants", JSON.stringify(participants));
 
     showMessage("Tipsene dine ble lagret.", "success");
-    console.log("Alle deltakere", participants);
+    console.log("Alle deltakere:", participants);
 }
 
 
@@ -262,6 +264,36 @@ function clearGroupInputs() {
         secondPlaceSelect.value = "";
     }
 }
+
+function validatePredictions(predictionData) {
+    if (!predictionData.user) {
+        return `Du må skrive inn navnet ditt før du lagrer.`;
+    }
+
+    for (let i = 0; i < predictionData.predictions.length; i++) {
+        const prediction = predictionData.predictions[i];
+
+        if (prediction.homeScore === "" || prediction.awayScore === "") {
+            return "Du må fylle inn tips for alle kampene før du lagrer.";
+        }
+    }
+
+    for (let i = 0; i < groups.length; i++) {
+        const group = groups[i];
+        const groupPrediction = predictionData.groupPredictions[group.id];
+
+        if (!groupPrediction.first || !groupPrediction.second) {
+            return `Du må velge både 1.- og 2.- plass i gruppe ${group.id}`;
+        }
+
+        if (groupPrediction.first === groupPrediction.second) {
+            return `Du kan ikke velge samme lag på både 1.- og 2.- plass i gruppe ${group.id}`;
+        }
+    }
+
+    return "";
+}
+
 
 renderMatches();
 renderGroups();
