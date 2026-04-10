@@ -1,21 +1,21 @@
 const matches = [
-  {
-    id: 1,
-    homeTeam: "Norge",
-    awayTeam: "Tyskland",
-    date: "2026-06-10"
-  },
-  {
+    {
+        id: 1,
+        homeTeam: "Norge",
+        awayTeam: "Tyskland",
+        dateTime: "2026-06-10T18:00"
+    },
+    {
     id: 2,
     homeTeam: "Brasil",
     awayTeam: "Japan",
-    date: "2026-06-11"
+    dateTime: "2026-06-11T19:00"
   },
   {
     id: 3,
     homeTeam: "Frankrike",
     awayTeam: "USA",
-    date: "2026-06-12"
+    dateTime: "2026-06-12T21:00"
   }
 ];
 
@@ -101,7 +101,7 @@ function renderAdminGroups() {
 
 function collectActualResults() {
     const actualMatches = [];
-    const actualGroups = [];
+    const actualGroups = {};
 
     for (let i = 0; i < matches.length; i++) {
         const match = matches[i];
@@ -119,18 +119,18 @@ function collectActualResults() {
     for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
 
-        const firstPlaceSelect = document.getElementById(`actual-group-${group.id}`);
+        const firstPlaceSelect = document.getElementById(`actual-group-${group.id}-first`);
         const secondPlaceSelect = document.getElementById(`actual-group-${group.id}-second`);
 
-    actualGroups[group.id] = {
-      first: firstPlaceSelect.value,
-      second: secondPlaceSelect.value
-    };
-  }
+        actualGroups[group.id] = {
+            first: firstPlaceSelect.value,
+            second: secondPlaceSelect.value
+        };
+    }
 
-  return {
-    matches: actualMatches,
-    groups: actualGroups
+    return {
+        matches: actualMatches,
+        groups: actualGroups
     };
 }
 
@@ -165,6 +165,8 @@ function showAdminMessage(message, type) {
 }
 
 function saveActualResults() {
+  showAdminMessage("", "");
+
   const actualResults = collectActualResults();
   const validationError = validateActualResults(actualResults);
 

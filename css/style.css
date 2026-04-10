@@ -205,3 +205,60 @@ button:hover {
 .message-box.error {
     color: crimson;
 }
+
+.leaderboard-card.gold {
+  border: 2px solid gold;
+  background-color: #fff8dc;
+}
+
+.leaderboard-card.silver {
+  border: 2px solid silver;
+  background-color: #f2f2f2;
+}
+
+.leaderboard-card.bronze {
+  border: 2px solid #cd7f32;
+  background-color: #fff3e0;
+}
+
+.locked-card {
+  opacity: 0.8;
+}
+
+.locked-text {
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.match-status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.status-open {
+  background-color: #e7f7ed;
+  color: #1f7a3d;
+}
+
+.status-locked {
+  background-color: #fdeaea;
+  color: #b42318;
+}
+
+.open-card {
+  border: 1px solid #d0e7d7;
+}
+
+.locked-card {
+  opacity: 0.85;
+}

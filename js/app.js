@@ -3,19 +3,19 @@ const matches = [
         id: 1,
         homeTeam: "Norge",
         awayTeam: "Tyskland",
-        date: "2026-06-10"
+        dateTime: "2026-04-10T12:00"
     },
     {
     id: 2,
     homeTeam: "Brasil",
     awayTeam: "Japan",
-    date: "2026-06-11"
+    dateTime: "2026-06-11T19:00"
   },
   {
     id: 3,
     homeTeam: "Frankrike",
     awayTeam: "USA",
-    date: "2026-06-12"
+    dateTime: "2026-06-12T21:00"
   }
 ];
 
@@ -38,27 +38,48 @@ const loadButton = document.getElementById("loadButton");
 const messageBox = document.getElementById("messageBox");
 const groupsContainer = document.getElementById("groupsContainer");
 
+const groupLockTime = "2026-06-10T17:00";
 
 function renderMatches() {
     matchesContainer.innerHTML = "";
 
     for (let i = 0; i < matches.length; i++) {
         const match = matches[i];
+        const locked = isMatchLocked(match);
+        const formattedDateTime = formatMatchDateTime(match.dateTime);
 
         matchesContainer.innerHTML += `
-            <article class="match-card">
-                <h3>${match.homeTeam} vs ${match.awayTeam}</h3>
-                <p>Dato: ${match.date}</p>
+            <article class="match-card ${locked ? "locked-card" : "open-card"}">
+                <div class="match-header">
+                    <h3>${match.homeTeam} vs ${match.awayTeam}</h3>
+                    <span class="match-status ${locked ? "status-locked" : "status-open"}">
+                        ${locked ? "Låst" : "Åpen"}
+                    </span>
+                </div>
+
+                <p>Start: ${formattedDateTime}</p>
 
                 <div class="score-inputs">
                     <div>
                         <label for="home-${match.id}">${match.homeTeam}</label>
-                        <input type="number" id="home-${match.id}" min="0" placeholder="0">
+                        <input 
+                            type="number" 
+                            id="home-${match.id}" 
+                            min="0" 
+                            placeholder="0"
+                            ${locked ? "disabled" : ""}
+                        >
                     </div>
 
                     <div>
                         <label for="away-${match.id}">${match.awayTeam}</label>
-                        <input type="number" id="away-${match.id}" min="0" placeholder="0">
+                        <input 
+                            type="number" 
+                            id="away-${match.id}" 
+                            min="0" 
+                            placeholder="0"
+                            ${locked ? "disabled" : ""}
+                        >
                     </div>
                 </div>
             </article>
@@ -111,9 +132,9 @@ function savePredictions() {
     const validationError = validatePredictions(predictionData);
 
     if (validationError) {
-    showMessage(validationError, "error");
-    return;
-  }
+        showMessage(validationError, "error");
+        return;
+    }
 
     const savedParticipants = localStorage.getItem("vmParticipants");
     const participants = savedParticipants ? JSON.parse(savedParticipants) : [];
@@ -123,15 +144,38 @@ function savePredictions() {
     });
 
     if (existingParticipantIndex !== -1) {
+        const existingParticipant = participants[existingParticipantIndex];
+
+        for (let i = 0; i < predictionData.predictions.length; i++) {
+            const newPrediction = predictionData.predictions[i];
+
+            const match = matches.find(function (matchItem) {
+                return matchItem.id === newPrediction.matchId;
+            });
+
+            if (isMatchLocked(match)) {
+                const oldPrediction = existingParticipant.predictions.find(function (prediction) {
+                    return prediction.matchId === newPrediction.matchId;
+                });
+
+                if (oldPrediction) {
+                    newPrediction.homeScore = oldPrediction.homeScore;
+                    newPrediction.awayScore = oldPrediction.awayScore;
+                }
+            }
+        }
+
+        if (areGroupsLocked()) {
+    predictionData.groupPredictions = existingParticipant.groupPredictions;
+}
+
         participants[existingParticipantIndex] = predictionData;
     } else {
         participants.push(predictionData);
     }
 
     localStorage.setItem("vmParticipants", JSON.stringify(participants));
-
     showMessage("Tipsene dine ble lagret.", "success");
-    console.log("Alle deltakere:", participants);
 }
 
 
@@ -218,6 +262,7 @@ function clearMessage() {
 
 function renderGroups() {
     groupsContainer.innerHTML = "";
+    const locked = areGroupsLocked();
 
     for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
@@ -230,20 +275,25 @@ function renderGroups() {
         }
 
         groupsContainer.innerHTML += `
-            <article class="group-card">
-                <h3>Gruppe ${group.id}</h3>
+            <article class="group-card ${locked ? "locked-card" : "open-card"}">
+                <div class="match-header">
+                    <h3>Gruppe ${group.id}</h3>
+                    <span class="match-status ${locked ? "status-locked" : "status-open"}">
+                        ${locked ? "Låst" : "Åpen"}
+                    </span>
+                </div>
 
                 <div class="group-selects">
                     <div>
-                        <label for="group-${group.id}-first">1. plass</label>
-                        <select id="group-${group.id}-first">
+                        <label for="group-${group.id}-first">1.-plass</label>
+                        <select id="group-${group.id}-first" ${locked ? "disabled" : ""}>
                             ${optionsHTML}
                         </select>
                     </div>
 
                     <div>
                         <label for="group-${group.id}-second">2.-plass</label>
-                        <select id="group-${group.id}-second">
+                        <select id="group-${group.id}-second" ${locked ? "disabled" : ""}>
                             ${optionsHTML}
                         </select>
                     </div>
@@ -267,27 +317,35 @@ function clearGroupInputs() {
 
 function validatePredictions(predictionData) {
     if (!predictionData.user) {
-        return `Du må skrive inn navnet ditt før du lagrer.`;
+        return "Du må skrive inn navnet ditt før du lagrer.";
     }
 
     for (let i = 0; i < predictionData.predictions.length; i++) {
         const prediction = predictionData.predictions[i];
 
-        if (prediction.homeScore === "" || prediction.awayScore === "") {
-            return "Du må fylle inn tips for alle kampene før du lagrer.";
+        const match = matches.find(function (matchItem) {
+            return matchItem.id === prediction.matchId;
+        });
+
+        if (!isMatchLocked(match)) {
+            if (prediction.homeScore === "" || prediction.awayScore === "") {
+                return `Du må fylle inn tips for alle åpne kamper før du lagrer.`;
+            }
         }
     }
 
-    for (let i = 0; i < groups.length; i++) {
-        const group = groups[i];
-        const groupPrediction = predictionData.groupPredictions[group.id];
+    if (!areGroupsLocked()) {
+        for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            const groupPrediction = predictionData.groupPredictions[group.id];
 
-        if (!groupPrediction.first || !groupPrediction.second) {
-            return `Du må velge både 1.- og 2.- plass i gruppe ${group.id}`;
-        }
+            if (!groupPrediction.first || !groupPrediction.second) {
+                return `Du må velge både 1.- og 2.-plass i gruppe ${group.id}.`;
+            }
 
-        if (groupPrediction.first === groupPrediction.second) {
-            return `Du kan ikke velge samme lag på både 1.- og 2.- plass i gruppe ${group.id}`;
+            if (groupPrediction.first === groupPrediction.second) {
+                return `Du kan ikke velge samme lag på både 1.- og 2.-plass i gruppe ${group.id}.`;
+            }
         }
     }
 
@@ -295,8 +353,36 @@ function validatePredictions(predictionData) {
 }
 
 
+
+function isMatchLocked(match) {
+    const now = new Date();
+    const matchStartTime = new Date(match.dateTime);
+
+    return now >= matchStartTime;
+}
+
+function areGroupsLocked() {
+    const now = new Date();
+    const groupLockDate = new Date(groupLockTime);
+
+    return now >= groupLockDate;
+}
+
+function formatMatchDateTime(dateTime) {
+    const date = new Date(dateTime);
+
+    return date.toLocaleString("no-NO", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
 renderMatches();
 renderGroups();
+
 
 saveButton.addEventListener("click", savePredictions);
 loadButton.addEventListener("click", loadParticipantByName);

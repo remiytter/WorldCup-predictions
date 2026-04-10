@@ -34,14 +34,17 @@ function loadActualResults() {
     return JSON.parse(savedResults);
 }
 
-function calculateScore(participant) {
-    const actualResults = loadActualResults();
-
+function calculateScore(participant, actualResults) {
     if (!actualResults) {
-        return 0;
+        return {
+            matchScore: 0,
+            groupScore: 0,
+            totalScore: 0
+        };
     }
 
-    let score = 0;
+    let matchScore = 0;
+    let groupScore = 0;
 
     for (let i = 0; i < participant.predictions.length; i++) {
         const prediction = participant.predictions[i];
@@ -61,7 +64,7 @@ function calculateScore(participant) {
         const actualAway = Number(actualMatch.awayScore);
 
         if (predictedHome === actualHome && predictedAway === actualAway) {
-            score += 3;
+            matchScore += 3;
         } else {
             let predictedWinner = "draw";
             let actualWinner = "draw";
@@ -79,7 +82,7 @@ function calculateScore(participant) {
             }
 
             if (predictedWinner === actualWinner) {
-                score += 1;
+                matchScore += 1;
             }
         }
     }
@@ -93,20 +96,25 @@ function calculateScore(participant) {
         }
 
         if (predictedGroup.first === actualGroup.first) {
-            score += 2;
+            groupScore += 2;
         }
 
         if (predictedGroup.second === actualGroup.second) {
-            score += 2;
+            groupScore += 2;
         }
     }
- 
-    return score;
+
+    return {
+        matchScore: matchScore,
+        groupScore: groupScore,
+        totalScore: matchScore + groupScore
+    };
 }
 
 
 function renderLeaderboard() {
     const participants = loadParticipants();
+    const actualResults = loadActualResults();
 
     if (participants.length === 0) {
         leaderboardContainer.innerHTML = "";
@@ -114,7 +122,10 @@ function renderLeaderboard() {
     }
 
     participants.forEach(function (participant) {
-        participant.score = calculateScore(participant);
+        const scoreData = calculateScore(participant, actualResults);
+        participant.matchScore = scoreData.matchScore;
+        participant.groupScore = scoreData.groupScore;
+        participant.score = scoreData.totalScore;
     });
 
     participants.sort(function (a, b) {
@@ -127,16 +138,27 @@ function renderLeaderboard() {
     leaderboardContainer.innerHTML = "";
 
     for (let i = 0; i < participants.length; i++) {
-        const participant = participants[i];
+    const participant = participants[i];
 
-        leaderboardContainer.innerHTML += `
-            <article class="leaderboard-card">
-                <h3>${i + 1}. ${participant.user}</h3>
-                <p>Poeng: ${participant.score}</p>
-                <p>Antall kamptips: ${participant.predictions.length}</p>
-            </article>
-        `;
+    let rankClass = "";
+
+    if (i === 0) {
+        rankClass = "gold";
+    } else if (i === 1) {
+        rankClass = "silver";
+    } else if (i === 2) {
+        rankClass = "bronze";
     }
+
+    leaderboardContainer.innerHTML += `
+        <article class="leaderboard-card ${rankClass}">
+            <h3>${i + 1}. ${participant.user}</h3>
+            <p>Totalpoeng: ${participant.score}</p>
+            <p>Kamp-poeng: ${participant.matchScore}</p>
+            <p>Gruppe-poeng: ${participant.groupScore}</p>
+        </article>
+    `;
+}
 }
 
 renderLeaderboard();
